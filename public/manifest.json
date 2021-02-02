@@ -1,17 +1,18 @@
 {
   "manifest_version": 2,
-
   "name": "Add to Google Calendar",
   "description": "Chrome Extension to create an event with url",
   "version": "1.0",
-
   "browser_action": {
     "default_icon": "icon.png"
   },
-
   "background": {
     "scripts": ["js/background.js"]
   },
-
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "permissions": ["activeTab", "contextMenus"]
 }
