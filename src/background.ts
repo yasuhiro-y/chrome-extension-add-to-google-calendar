@@ -1,27 +1,51 @@
 chrome.contextMenus.create({
-  title: 'このページのドメイン名を whois で検索',
-  onclick: function (info, tab) {
-    var url = info.pageUrl
-    var host = url.replace(/https?:\/\/([^\/]+).*/, '$1')
-    var tree = host.split('.')
-    var parts = tree.length
-
-    var domain
-    if (parts == 1) {
-      alert('ドメイン名を取得できません。')
-      return
-    } else if (parts == 2) {
-      domain = host
-    } else if (tree[parts - 1].length >= 3) {
-      domain = tree[parts - 2] + '.' + tree[parts - 1]
-    } else if (tree[parts - 2].length == 2) {
-      domain = tree[parts - 3] + '.' + tree[parts - 2] + '.' + tree[parts - 1]
-    } else {
-      domain = tree[parts - 2] + '.' + tree[parts - 1]
-    }
-
-    chrome.tabs.create({
-      url: 'http://akagi.jp/whois/?#!/key=' + domain,
-    })
+  title: 'Add to Google Calendar',
+  type: 'normal',
+  contexts: ['all'],
+  onclick: (info, tab) => {
+    handleClick(info, tab)
   },
 })
+
+const handleClick = (
+  info: chrome.contextMenus.OnClickData,
+  tab: chrome.tabs.Tab
+) => {
+  const pageTitle = tab.title
+  const { url } = tab
+  const { selectionText } = info
+  const eventTitle = selectionText || pageTitle
+  const generatedUrl = addToGoogleCalendarUrl(eventTitle, url)
+  chrome.tabs.create({
+    url: generatedUrl,
+  })
+}
+
+const addToGoogleCalendarUrl = (eventTitle?: string, webUrl?: string) => {
+  const tomorrow = new Date(Date.now() * 60 * 60 * 1000)
+  const param = {
+    text: eventTitle,
+    details: '',
+    location: webUrl,
+    dates: {
+      start:
+        tomorrow.getFullYear() +
+        '' +
+        ('0' + (tomorrow.getMonth() + 1)).slice(-2) +
+        ('0' + tomorrow.getDate()).slice(-2) +
+        'T080000',
+      end:
+        tomorrow.getFullYear() +
+        '' +
+        ('0' + (tomorrow.getMonth() + 1)).slice(-2) +
+        ('0' + tomorrow.getDate()).slice(-2) +
+        'T080500',
+    },
+  }
+  let url = 'http://www.google.com/calendar/event?action=TEMPLATE'
+  url += '&text=' + param.text
+  url += '&details=' + param.details
+  url += '&location=' + param.location
+  url += '&dates=' + param.dates.start + '/' + param.dates.end
+  return url
+}
